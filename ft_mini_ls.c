@@ -20,32 +20,57 @@ __attribute__((destructor)) static void destructor(void)
 	system("leaks -q ft_mini_ls");
 }
 
+int	compare_time_t(const time_t a, const time_t b, int order)
+{
+	if (order == ASC)
+	{
+		if (a < b)
+			return (-1);
+		if (b < a)
+			return (1);
+		return (0);
+	}
+	if (order == DESC)
+	{
+		if (a < b)
+			return (1);
+		if (b < a)
+			return (-1);
+		return (0;
+	}
+	perror("compare_time_t: Invalid order.")
+	return(0);
+}
+
 static int	do_ls(char *path)
 {
-	DIR *dp;
-	t_finfo	finfo[10];
-	size_t	i;
-	int		is_error;
+	DIR			*dp;
+	t_file_info	*fip;
+	size_t		fip_size;
+	int			is_error;
 
 	dp = opendir(path);
 	if (!dp)
 		return (-1);
-	i = 0;
-	while (i < 10)
+	fip_size = 16;
+	fip = (t_file_info *)ft_calloc(fip_size, sizeof(t_file_info));
+	size_t	i = 0;
+	while (i < fip_size)
 	{
-		finfo[i].entry = readdir(dp);
-		if (!finfo[i].entry)
+		fip[i].entry = readdir(dp);
+		if (!fip[i].entry)
 			break ;
-		if (finfo[i].entry->d_type == DT_LNK)
-			is_error = lstat(finfo[i].entry->d_name, &finfo[i].status);
+		if (fip[i].entry->d_type == DT_LNK)
+			is_error = lstat(fip[i].entry->d_name, &fip[i].status);
 		else
-			is_error = stat(finfo[i].entry->d_name, &finfo[i].status);
+			is_error = stat(fip[i].entry->d_name, &fip[i].status);
 		if (is_error == -1)
 			break ;
+		printf("%15s\t%zd\n", fip[i].entry->d_name, fip[i].status.st_mtimespec.tv_sec);
 		i++;
-//		if (*entry->d_name != '.')
-//		printf("%s\n", entry->d_name);
 	}
+	if (is_error == -1)
+		return(free(fip), closedir(dp));
 	return (closedir(dp));
 }
 
@@ -58,7 +83,5 @@ int	main(int argc, char *argv[])
 		return (fprintf(stderr, "%s: no arguments\n", argv[0]), -1);
 	i = 1;
 	do_ls(argv[i]);
-	stat("Go", &statbuf);
-	printf("Go last update time:  %zd\n", statbuf.st_mtimespec.tv_sec);
 	return (0);
 }

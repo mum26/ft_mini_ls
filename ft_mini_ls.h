@@ -14,13 +14,14 @@
 # define FT_MINI_LS_H
 
 # include "libft.h"
+# include <time.h>
 # include <dirent.h>
 # include <sys/stat.h>
 
-typedef struct s_finfo
+typedef struct s_file_info
 {
 	struct dirent	*entry;
 	struct stat		status;
-}				t_finfo;
+}				t_file_info;
 
 #endif
