@@ -6,7 +6,7 @@
 /*   By: sishige <sishige@student.42tokyo.j>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/01 18:45:21 by sishige           #+#    #+#             */
-/*   Updated: 2024/08/02 00:48:25 by sishige          ###   ########.fr       */
+/*   Updated: 2024/08/02 18:09:45 by sishige          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,13 @@ __attribute__((destructor)) static void destructor(void)
 	system("leaks -q ft_mini_ls");
 }
 
-int	compare_dir_update_time(const t_file_info *a, const t_file_info *b, int order)
+int	compare_dir_update_time(const void *a, const void *b, int order)
 {
 	time_t a_time;
 	time_t b_time;
 
-	a_time = a->status.st_mtimespec.tv_sec;
-	b_time = b->status.st_mtimespec.tv_sec;
+	a_time = ((t_file_info *)a)->status.st_mtimespec.tv_sec;
+	b_time = ((t_file_info *)b)->status.st_mtimespec.tv_sec;
 	if (order == ASC)
 	{
 		if (a_time < b_time)
@@ -71,12 +71,20 @@ static int	do_ls(char *path)
 			is_error = stat(fip[i].entry->d_name, &fip[i].status);
 		if (is_error == -1)
 			break ;
-		printf("%15s\t%zd\n", fip[i].entry->d_name, fip[i].status.st_mtimespec.tv_sec);
 		i++;
 	}
 	if (is_error == -1)
 		return(free(fip), closedir(dp));
-	return (closedir(dp));
+	ft_qsort(fip, fip_size, sizeof(t_file_info), &compare_dir_update_time);
+	i = 0;
+	while(i < fip_size)
+	{
+		if (!fip[i].entry)
+			break ;
+		printf("%15s\t%zd\n", fip[i].entry->d_name, fip[i].status.st_mtimespec.tv_sec);
+		i++;
+	}
+	return (free(fip), closedir(dp));
 }
 
 int	main(int argc, char *argv[])
