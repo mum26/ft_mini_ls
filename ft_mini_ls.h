@@ -18,10 +18,16 @@
 # include <dirent.h>
 # include <sys/stat.h>
 
+# define ASC  1
+# define DESC 2
+
 typedef struct s_file_info
 {
 	struct dirent	*entry;
 	struct stat		status;
 }				t_file_info;
+
+void	ft_qsort(void *base, size_t nel, size_t width, int (*compar)(const void *, const void *));
+void	ft_swap(void *a, void *b, size_t width);
 
 #endif

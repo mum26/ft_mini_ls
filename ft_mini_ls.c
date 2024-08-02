@@ -20,25 +20,30 @@ __attribute__((destructor)) static void destructor(void)
 	system("leaks -q ft_mini_ls");
 }
 
-int	compare_time_t(const time_t a, const time_t b, int order)
+int	compare_dir_update_time(const t_file_info *a, const t_file_info *b, int order)
 {
+	time_t a_time;
+	time_t b_time;
+
+	a_time = a->status.st_mtimespec.tv_sec;
+	b_time = b->status.st_mtimespec.tv_sec;
 	if (order == ASC)
 	{
-		if (a < b)
+		if (a_time < b_time)
 			return (-1);
-		if (b < a)
+		if (b_time < a_time)
 			return (1);
 		return (0);
 	}
 	if (order == DESC)
 	{
-		if (a < b)
+		if (a_time < b_time)
 			return (1);
-		if (b < a)
+		if (b_time < a_time)
 			return (-1);
-		return (0;
+		return (0);
 	}
-	perror("compare_time_t: Invalid order.")
+	perror("compare_dir_update_time() -> Invalid order.");
 	return(0);
 }
 
@@ -77,7 +82,6 @@ static int	do_ls(char *path)
 int	main(int argc, char *argv[])
 {
 	int	i;
-	struct stat statbuf;
 
 	if (argc < 2)
 		return (fprintf(stderr, "%s: no arguments\n", argv[0]), -1);

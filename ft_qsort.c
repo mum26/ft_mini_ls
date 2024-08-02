@@ -7,7 +7,7 @@ void	ft_swap(void *a, void *b, size_t width)
 	tmp = malloc(width);
 	if (!tmp)
 	{
-		peeror("swap() -> malloc");
+		perror("swap() -> malloc");
 		return ;
 	}
 	ft_memcpy(tmp, a, width);
@@ -29,10 +29,13 @@ static void	do_qsort(unsigned char *base, size_t left, size_t right, size_t widt
 	while (j < right)
 		if (compar(base + j * width, pivot) < 0)
 			swap(base + i++ * width, base + j++ * width, width);
-	swap()
+	swap(base + i + width, base + right * width, width);
+	if (0 < i)
+		do_qsort(base, left, i - 1, width, compar);
+	do_qsort(base, i + 1, right, compar)
 }
 
-void	ft_qsort(void *base, size_t nel, size_t width, int (*compar)(const *void)(const *void))
+void	ft_qsort(void *base, size_t nel, size_t width, int (*compar)(const void *, const void *))
 {
 	if (nel <= 1)
 		return ;
