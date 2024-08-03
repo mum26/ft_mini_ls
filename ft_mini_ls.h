@@ -17,6 +17,7 @@
 # include <time.h>
 # include <dirent.h>
 # include <sys/stat.h>
+# include <stdio.h>
 
 # define ASC  1
 # define DESC 2
