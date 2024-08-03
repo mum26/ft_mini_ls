@@ -100,24 +100,24 @@ __attribute__((destructor)) static void destructor(void)
 
 int	compare_dir_update_time(const void *a, const void *b, int order)
 {
-	long a_time;
-	long b_time;
+	time_t a_update_time;
+	time_t b_update_time;
 
-	a_time = ((t_file_info *)a)->status.st_mtimespec.tv_sec;
-	b_time = ((t_file_info *)b)->status.st_mtimespec.tv_sec;
+	a_update_time = ((t_file_info *)a)->status.st_mtimespec.tv_sec;
+	b_update_time = ((t_file_info *)b)->status.st_mtimespec.tv_sec;
 	if (order == ASC)
 	{
-		if (a_time < b_time)
+		if (a_update_time < b_update_time)
 			return (-1);
-		if (b_time < a_time)
+		if (b_update_time < a_update_time)
 			return (1);
 		return (0);
 	}
 	if (order == DESC)
 	{
-		if (a_time < b_time)
+		if (a_update_time < b_update_time)
 			return (1);
-		if (b_time < a_time)
+		if (b_update_time < a_update_time)
 			return (-1);
 		return (0);
 	}
@@ -127,9 +127,9 @@ int	compare_dir_update_time(const void *a, const void *b, int order)
 
 static int	do_ls(char *path)
 {
-	DIR			*dp;
-	t_file_info	*fip;
-	size_t		fip_size;
+	DIR			*dir_p;
+	t_file_info	*file_info_p;
+	size_t		file_info_array_size;
 	int			is_error;
 
 	dp = opendir(path);
