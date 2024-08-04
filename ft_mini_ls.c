@@ -6,7 +6,7 @@
 /*   By: sishige <sishige@student.42tokyo.j>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/01 18:45:21 by sishige           #+#    #+#             */
-/*   Updated: 2024/08/02 18:09:45 by sishige          ###   ########.fr       */
+/*   Updated: 2024/08/05 00:00:57 by sishige          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,161 +20,138 @@ __attribute__((destructor)) static void destructor(void)
 	system("leaks -q ft_mini_ls");
 }
 
-//int	compare_dir_update_time(const void *a, const void *b, int order)
-//{
-//	long a_time;
-//	long b_time;
-//
-//	a_time = ((t_file_info *)a)->status.st_mtimespec.tv_sec;
-//	b_time = ((t_file_info *)b)->status.st_mtimespec.tv_sec;
-//	if (order == ASC)
-//	{
-//		if (a_time < b_time)
-//			return (-1);
-//		if (b_time < a_time)
-//			return (1);
-//		return (0);
-//	}
-//	if (order == DESC)
-//	{
-//		if (a_time < b_time)
-//			return (1);
-//		if (b_time < a_time)
-//			return (-1);
-//		return (0);
-//	}
-//	perror("compare_dir_update_time() -> Invalid order.");
-//	return(0);
-//}
-//
-//static int	do_ls(char *path)
-//{
-//	DIR			*dp;
-//	t_file_info	*fip;
-//	size_t		fip_size;
-//	int			is_error;
-//
-//	dp = opendir(path);
-//	if (!dp)
-//		return (-1);
-//	fip_size = 16;
-//	fip = (t_file_info *)ft_calloc(fip_size, sizeof(t_file_info));
-//	size_t	i = 0;
-//	while (i < fip_size)
-//	{
-//		fip[i].entry = readdir(dp);
-//		if (!fip[i].entry)
-//			break ;
-//		if (fip[i].entry->d_type == DT_LNK)
-//			is_error = lstat(fip[i].entry->d_name, &fip[i].status);
-//		else
-//			is_error = stat(fip[i].entry->d_name, &fip[i].status);
-//		if (is_error == -1)
-//			break ;
-//		i++;
-//	}
-//	if (is_error == -1)
-//		return(free(fip), closedir(dp));
-//	ft_qsort(fip, fip_size, sizeof(t_file_info), &compare_dir_update_time);
-//	i = 0;
-//	while(i < fip_size)
-//	{
-//		if (!fip[i].entry)
-//			break ;
-//		printf("%15s\t%zd\n", fip[i].entry->d_name, fip[i].status.st_mtimespec.tv_sec);
-//		i++;
-//	}
-//	return (free(fip), closedir(dp));
-//}
-//
-//int	main(int argc, char *argv[])
-//{
-//	int	i;
-//
-//	if (argc < 2)
-//		return (fprintf(stderr, "%s: no arguments\n", argv[0]), -1);
-//	i = 1;
-//	do_ls(argv[i]);
-//	return (0);
-//}
+void reverse_array(void *array, size_t element_count, size_t element_size) {
+    // バッファ用に一時的なメモリを確保
+    void *temp = malloc(element_size);
+    if (temp == NULL) {
+        perror("malloc");
+        return;
+    }
 
-int	compare_dir_update_time(const void *a, const void *b, int order)
-{
-	time_t a_update_time;
-	time_t b_update_time;
+    // 配列の反転
+    for (size_t i = 0; i < element_count / 2; ++i) {
+        void *start = (char *)array + i * element_size;
+        void *end = (char *)array + (element_count - i - 1) * element_size;
 
-	a_update_time = ((t_file_info *)a)->status.st_mtimespec.tv_sec;
-	b_update_time = ((t_file_info *)b)->status.st_mtimespec.tv_sec;
-	if (order == ASC)
-	{
-		if (a_update_time < b_update_time)
-			return (-1);
-		if (b_update_time < a_update_time)
-			return (1);
-		return (0);
-	}
-	if (order == DESC)
-	{
-		if (a_update_time < b_update_time)
-			return (1);
-		if (b_update_time < a_update_time)
-			return (-1);
-		return (0);
-	}
-	perror("compare_dir_update_time() -> Invalid order.");
-	return(0);
+        // startとendの内容を交換
+        memcpy(temp, start, element_size);
+        memcpy(start, end, element_size);
+        memcpy(end, temp, element_size);
+    }
+
+    // 一時メモリを解放
+    free(temp);
 }
 
-static int	do_ls(char *path)
+// Always in descending order.
+int	compare_dir_update_time_with_name(const void *a, const void *b)
 {
-	DIR			*dir_p;
-	t_file_info	*file_info_p;
-	size_t		file_info_array_size;
-	int			is_error;
+	time_t	a_update_time;
+	time_t	b_update_time;
+	char	*a_d_name;
+	char	*b_d_name;
 
-	dp = opendir(path);
-	if (!dp)
+	a_update_time = ((t_ent_stat *)a)->stat.st_mtimespec.tv_sec;
+	b_update_time = ((t_ent_stat *)b)->stat.st_mtimespec.tv_sec;
+	if (a_update_time < b_update_time)
+		return (1);
+	if (b_update_time < a_update_time)
 		return (-1);
-	fip_size = 16;
-	fip = (t_file_info *)calloc(fip_size, sizeof(t_file_info));
-	if (!fip)
-		return (closedir(dp), -1);
-	size_t	i = 0;
-	while (1)
+	a_d_name = ((t_ent_stat *)a)->ent->d_name;
+	b_d_name = ((t_ent_stat *)b)->ent->d_name;
+	return (strcmp(a_d_name, b_d_name));
+}
+
+int	compare_d_name(const void *a, const void *b)
+{
+	char	*a_d_name;
+	char	*b_d_name;
+
+	a_d_name = ((t_ent_stat *)a)->ent->d_name;
+	b_d_name = ((t_ent_stat *)b)->ent->d_name;
+	return (strcmp(a_d_name, b_d_name));
+}
+
+static int	get_dirent_stat(t_ent_stat *ent_stat_p, int ent_stat_count) 
+{
+	int	i;
+
+	if (!ent_stat_p || ent_stat_count < 1)
+		return (perror("get_dirent_stat()"), -1);
+	i = 0;
+	while (i < ent_stat_count)
 	{
-		if (i >= fip_size)
+		if (ent_stat_p[i].ent->d_type != DT_LNK)
 		{
-			fip_size *= 2;
-			t_file_info *tmp = realloc(fip, fip_size * sizeof(t_file_info));
-			if (!tmp)
-				return (free(fip), closedir(dp), -1);
-			fip = tmp;
+			if (lstat(ent_stat_p[i].ent->d_name, &ent_stat_p[i].stat) == -1)
+				return (perror("get_dirent() -> lstat()"), -1);
 		}
-		fip[i].entry = readdir(dp);
-		if (!fip[i].entry)
-			break ;
-		if (fip[i].entry->d_type == DT_LNK)
-			is_error = lstat(fip[i].entry->d_name, &fip[i].status);
 		else
-			is_error = stat(fip[i].entry->d_name, &fip[i].status);
-		if (is_error == -1)
-			return (free(fip), closedir(dp), -1);
+		{
+			if (stat(ent_stat_p[i].ent->d_name, &ent_stat_p[i].stat) == -1)
+				return (perror("get_dirent() -> stat()"), -1);
+		}
 		i++;
 	}
-	size_t num_files = i;
-	ft_qsort(fip, num_files, sizeof(t_file_info), &compare_dir_update_time);
-	for (i = 0; i < num_files; i++)
+	return (i);
+}
+
+static int	get_dirent(t_ent_stat **ent_stat_p, DIR *dp)
+{
+	int	ent_stat_size;
+	int	i;
+
+	if (!ent_stat_p)
+		return (perror("get_dirent()"),-1);
+	ent_stat_size = 16;
+	*ent_stat_p = (t_ent_stat *)ft_calloc(ent_stat_size, sizeof(t_ent_stat));
+	if (!*ent_stat_p)
+		return (perror("get_dirend -> ft_calloc()"), -1);
+	i = 0;
+	while (true)
 	{
-		if (fip[i].entry->d_name[0] != '.')
-			printf("%s\n", fip[i].entry->d_name);
+		if (ent_stat_size <= i)
+		{
+			*ent_stat_p = (t_ent_stat *)ft_realloc(ent_stat_p, sizeof(t_ent_stat) * ent_stat_size * 2 ,
+					sizeof(t_ent_stat) * ent_stat_size);
+			if (!ent_stat_p)
+				return (free(*ent_stat_p), perror("get_dirent() -> ft_realloc()"), -1);
+			ent_stat_size *= 2;
+		}
+		(*ent_stat_p)[i].ent = readdir(dp);
+		if (!(*ent_stat_p)[i].ent)
+			break ;
+		i++;
 	}
-	return (free(fip), closedir(dp), 0);
+	return (i);
 }
 
 int	main(int argc, char *argv[])
 {
-	if (argc < 2)
-		return (fprintf(stderr, "%s: no arguments\n", argv[0]), -1);
-	do_ls(argv[1]);
+	DIR			*dp;
+	t_ent_stat	*ent_stat_p;
+	int			ent_stat_count;
+	int			i;
+
+	if (1 < argc)
+		return (fprintf(stderr, "%s: 引数は受けつけてません。\n", argv[0]), -1);
+	dp = opendir(".");
+	ent_stat_count = get_dirent(&ent_stat_p, dp);
+	if (ent_stat_count < 0)
+		return (perror("main -> get_dirent()"), -1);
+	ft_qsort(ent_stat_p, ent_stat_count, sizeof(t_ent_stat), &compare_d_name);
+	if (get_dirent_stat(ent_stat_p, ent_stat_count) < 0)
+		return (perror("main -> get_dirent_stat()"), -1);
+	reverse_array(ent_stat_p, ent_stat_count, sizeof(t_ent_stat));
+	i = 0;
+	while (i < ent_stat_count)
+	{
+		if (ent_stat_p[i].ent->d_name[0] != '.')
+			printf("%s\n", ent_stat_p[i].ent->d_name);
+		i++;
+	}
+	free(ent_stat_p);
+	if (closedir(dp))
+		return (perror("main() -> closedir()"), -1);
 	return (0);
 }

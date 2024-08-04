@@ -2,7 +2,8 @@ NAME     = ft_mini_ls
 CFLAGS   = -Wall -Wextra -Werror -g -Ilibft
 LDFLAGS  = -Llibft -lft
 SRCS     = ft_mini_ls.c \
-		   ft_qsort.c
+		   ft_qsort.c \
+		   ft_realloc.c
 OBJS     = $(SRCS:.c=.o)
 LIB_NAME = libft
 LIB_PATH = ./$(LIB_NAME)/$(LIB_NAME).a

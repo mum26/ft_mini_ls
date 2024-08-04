@@ -6,7 +6,7 @@
 /*   By: sishige <sishige@student.42tokyo.j>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/01 19:02:54 by sishige           #+#    #+#             */
-/*   Updated: 2024/08/02 18:09:22 by sishige          ###   ########.fr       */
+/*   Updated: 2024/08/04 21:21:28 by sishige          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,16 +19,15 @@
 # include <sys/stat.h>
 # include <stdio.h>
 
-# define ASC  1
-# define DESC 2
-
-typedef struct s_file_info
+typedef struct s_ent_stat
 {
-	struct dirent	*entry;
-	struct stat		status;
-}				t_file_info;
+	struct dirent	*ent;
+	struct stat		stat;
+}				t_ent_stat;
 
-void	ft_qsort(void *base, size_t nel, size_t width, int (*compar)(const void *, const void *, int));
+void	ft_qsort(void *base, size_t nel, size_t width, int (*compar)(const void *, const void *));
 void	ft_swap(void *a, void *b, size_t width);
+
+void	*ft_realloc(void *ptr, size_t new_size, size_t old_size);
 
 #endif
