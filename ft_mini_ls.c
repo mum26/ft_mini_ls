@@ -6,7 +6,7 @@
 /*   By: sishige <sishige@student.42tokyo.j>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/01 18:45:21 by sishige           #+#    #+#             */
-/*   Updated: 2024/08/05 00:00:57 by sishige          ###   ########.fr       */
+/*   Updated: 2024/08/05 19:59:26 by sishige          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,29 +20,6 @@ __attribute__((destructor)) static void destructor(void)
 	system("leaks -q ft_mini_ls");
 }
 
-void reverse_array(void *array, size_t element_count, size_t element_size) {
-    // バッファ用に一時的なメモリを確保
-    void *temp = malloc(element_size);
-    if (temp == NULL) {
-        perror("malloc");
-        return;
-    }
-
-    // 配列の反転
-    for (size_t i = 0; i < element_count / 2; ++i) {
-        void *start = (char *)array + i * element_size;
-        void *end = (char *)array + (element_count - i - 1) * element_size;
-
-        // startとendの内容を交換
-        memcpy(temp, start, element_size);
-        memcpy(start, end, element_size);
-        memcpy(end, temp, element_size);
-    }
-
-    // 一時メモリを解放
-    free(temp);
-}
-
 // Always in descending order.
 int	compare_dir_update_time_with_name(const void *a, const void *b)
 {
@@ -50,16 +27,22 @@ int	compare_dir_update_time_with_name(const void *a, const void *b)
 	time_t	b_update_time;
 	char	*a_d_name;
 	char	*b_d_name;
+	int		n;
 
 	a_update_time = ((t_ent_stat *)a)->stat.st_mtimespec.tv_sec;
 	b_update_time = ((t_ent_stat *)b)->stat.st_mtimespec.tv_sec;
 	if (a_update_time < b_update_time)
-		return (1);
-	if (b_update_time < a_update_time)
 		return (-1);
+	if (b_update_time < a_update_time)
+		return (1);
 	a_d_name = ((t_ent_stat *)a)->ent->d_name;
 	b_d_name = ((t_ent_stat *)b)->ent->d_name;
-	return (strcmp(a_d_name, b_d_name));
+	n = strcmp(a_d_name, b_d_name);
+	if (n == -1)
+		return (1);
+	if (n == 1)
+		return (-1);
+	return (0);
 }
 
 int	compare_d_name(const void *a, const void *b)
@@ -139,10 +122,9 @@ int	main(int argc, char *argv[])
 	ent_stat_count = get_dirent(&ent_stat_p, dp);
 	if (ent_stat_count < 0)
 		return (perror("main -> get_dirent()"), -1);
-	ft_qsort(ent_stat_p, ent_stat_count, sizeof(t_ent_stat), &compare_d_name);
 	if (get_dirent_stat(ent_stat_p, ent_stat_count) < 0)
 		return (perror("main -> get_dirent_stat()"), -1);
-	reverse_array(ent_stat_p, ent_stat_count, sizeof(t_ent_stat));
+	ft_qsort(ent_stat_p, ent_stat_count, sizeof(t_ent_stat), &compare_dir_update_time_with_name);
 	i = 0;
 	while (i < ent_stat_count)
 	{
