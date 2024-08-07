@@ -20,6 +20,15 @@ __attribute__((destructor)) static void destructor(void)
 	system("leaks -q ft_mini_ls");
 }
 
+int ft_strcmp(const char *s1, const char *s2)
+{
+    while (*s1 && (*s1 == *s2)) {
+        s1++;
+        s2++;
+    }
+    return *(unsigned char *)s1 - *(unsigned char *)s2;
+}
+
 // Always in descending order.
 int	compare_dir_update_time_with_name(const void *a, const void *b)
 {
@@ -27,7 +36,7 @@ int	compare_dir_update_time_with_name(const void *a, const void *b)
 	time_t	b_update_time;
 	char	*a_d_name;
 	char	*b_d_name;
-	int		n;
+//	int		n;
 
 	a_update_time = ((t_ent_stat *)a)->stat.st_mtimespec.tv_sec;
 	b_update_time = ((t_ent_stat *)b)->stat.st_mtimespec.tv_sec;
@@ -37,12 +46,7 @@ int	compare_dir_update_time_with_name(const void *a, const void *b)
 		return (1);
 	a_d_name = ((t_ent_stat *)a)->ent->d_name;
 	b_d_name = ((t_ent_stat *)b)->ent->d_name;
-	n = strcmp(a_d_name, b_d_name);
-	if (n == -1)
-		return (1);
-	if (n == 1)
-		return (-1);
-	return (0);
+	return (ft_strcmp(a_d_name, b_d_name));
 }
 
 int	compare_d_name(const void *a, const void *b)
@@ -95,7 +99,7 @@ static int	get_dirent(t_ent_stat **ent_stat_p, DIR *dp)
 	{
 		if (ent_stat_size <= i)
 		{
-			*ent_stat_p = (t_ent_stat *)ft_realloc(ent_stat_p, sizeof(t_ent_stat) * ent_stat_size * 2 ,
+			*ent_stat_p = (t_ent_stat *)ft_realloc(*ent_stat_p, sizeof(t_ent_stat) * ent_stat_size * 2 ,
 					sizeof(t_ent_stat) * ent_stat_size);
 			if (!ent_stat_p)
 				return (free(*ent_stat_p), perror("get_dirent() -> ft_realloc()"), -1);
@@ -129,7 +133,7 @@ int	main(int argc, char *argv[])
 	while (i < ent_stat_count)
 	{
 		if (ent_stat_p[i].ent->d_name[0] != '.')
-			printf("%s\n", ent_stat_p[i].ent->d_name);
+			printf("%s\t%zd\n", ent_stat_p[i].ent->d_name, ent_stat_p[i].stat.st_mtimespec.tv_sec);
 		i++;
 	}
 	free(ent_stat_p);
